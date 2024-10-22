@@ -29,7 +29,7 @@ class Version:
         self.child_files = []
 
 
-# Initialize session states
+# Initialize session states if they don't exist
 if 'codebases' not in st.session_state:
     st.session_state.codebases = {}
 
@@ -251,3 +251,4 @@ if st.session_state.codebases:
             create_download_link_pdf(pdf_data, f"{selected_file}_v{version_obj.version_number}_report.pdf"),
             unsafe_allow_html=True
         )
+
