@@ -29,9 +29,20 @@ class Version:
         self.child_files = []
 
 
-# Initialize session states if they don't exist
+# Initialize session states and set the initial parent-child relationship
 if 'codebases' not in st.session_state:
     st.session_state.codebases = {}
+
+    # Predefined parent and child relationship setup
+    parent_version = Version(name="app1.py", version_number="1.0")
+    child_version = Version(name="app11.py", version_number="1.1", parent_file="app1.py")
+
+    # Link child file to the parent
+    parent_version.child_files.append("app11.py")
+
+    # Add to session state
+    st.session_state.codebases["app1.py"] = parent_version
+    st.session_state.codebases["app11.py"] = child_version
 
 # Sidebar for codebase management
 with st.sidebar:
@@ -251,4 +262,3 @@ if st.session_state.codebases:
             create_download_link_pdf(pdf_data, f"{selected_file}_v{version_obj.version_number}_report.pdf"),
             unsafe_allow_html=True
         )
-
