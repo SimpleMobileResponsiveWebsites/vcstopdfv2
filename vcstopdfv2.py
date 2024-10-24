@@ -27,13 +27,9 @@ class Version:
         self.issues = []
 
 
-# Initialize session states and set the initial parent-child relationship
+# Initialize session states and clear any existing files
 if 'codebases' not in st.session_state:
-    st.session_state.codebases = {}
-
-    # Predefined initial file
-    initial_version = Version(name="app1.py", version_number="1.0")
-    st.session_state.codebases["app1.py"] = initial_version
+    st.session_state.codebases = {}  # Ensure the app starts with an empty state
 
 # Sidebar for codebase management
 with st.sidebar:
