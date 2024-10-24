@@ -16,33 +16,24 @@ def create_download_link_pdf(pdf_data, download_filename):
 
 
 class Version:
-    def __init__(self, name, version_number, parent_file=None, description=""):
+    def __init__(self, name, version_number, description=""):
         self.name = name
         self.version_number = version_number
-        self.parent_file = parent_file
         self.description = description
         self.creation_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.status = "Active"
         self.notes = []
         self.code_snippets = []
         self.issues = []
-        self.child_files = []
 
 
 # Initialize session states and set the initial parent-child relationship
 if 'codebases' not in st.session_state:
     st.session_state.codebases = {}
 
-    # Predefined parent and child relationship setup
-    parent_version = Version(name="app1.py", version_number="1.0")
-    child_version = Version(name="app11.py", version_number="1.1", parent_file="app1.py")
-
-    # Link child file to the parent
-    parent_version.child_files.append("app11.py")
-
-    # Add to session state
-    st.session_state.codebases["app1.py"] = parent_version
-    st.session_state.codebases["app11.py"] = child_version
+    # Predefined initial file
+    initial_version = Version(name="app1.py", version_number="1.0")
+    st.session_state.codebases["app1.py"] = initial_version
 
 # Sidebar for codebase management
 with st.sidebar:
@@ -51,45 +42,16 @@ with st.sidebar:
     # File name input with extension
     new_file_name = st.text_input("File Name (with extension, e.g., appxx.py):")
 
-    # Selection for Parent or Child File
-    file_type = st.radio(
-        "Is this a parent or a child file?",
-        ("Parent", "Child")
-    )
-
-    parent_file = None
-    if file_type == "Child":
-        available_files = list(st.session_state.codebases.keys())
-        parent_file = st.selectbox(
-            "Select Parent File",
-            available_files if available_files else ["No parent files available"]
-        )
-
     if st.button("Add New File"):
         if new_file_name:
             if new_file_name not in st.session_state.codebases:
-                # Generate version number based on parent/child selection
-                if file_type == "Child" and parent_file:
-                    parent_version = st.session_state.codebases[parent_file].version_number
-                    version_number = f"{parent_version}.1"
-                else:
-                    version_number = "1.0"  # Default for parent files
-
-                # Create new version object
-                new_version = Version(
-                    name=new_file_name,
-                    version_number=version_number,
-                    parent_file=parent_file if file_type == "Child" else None
-                )
+                # Create new version object with default version number
+                new_version = Version(name=new_file_name, version_number="1.0")
 
                 # Add to codebases
                 st.session_state.codebases[new_file_name] = new_version
 
-                # Update parent's child list if applicable
-                if file_type == "Child" and parent_file:
-                    st.session_state.codebases[parent_file].child_files.append(new_file_name)
-
-                st.success(f"Added file: {new_file_name} (Version {version_number})")
+                st.success(f"Added file: {new_file_name} (Version 1.0)")
             else:
                 st.error("File already exists!")
         else:
@@ -111,8 +73,6 @@ if st.session_state.codebases:
     st.header("File Details")
     st.write(f"Created: {version_obj.creation_date}")
     st.write(f"Status: {version_obj.status}")
-    st.write(f"Parent File: {version_obj.parent_file if version_obj.parent_file else 'None'}")
-    st.write(f"Child Files: {', '.join(version_obj.child_files) if version_obj.child_files else 'None'}")
 
     # Status update
     status_options = ["Active", "Deprecated", "Issues Found"]
@@ -203,9 +163,7 @@ if st.session_state.codebases:
         pdf_elements.append(Paragraph("File Details", styles['Heading2']))
         file_data = [
             ["Created", version_obj.creation_date],
-            ["Status", version_obj.status],
-            ["Parent File", version_obj.parent_file if version_obj.parent_file else "None"],
-            ["Child Files", ", ".join(version_obj.child_files) if version_obj.child_files else "None"]
+            ["Status", version_obj.status]
         ]
         file_table = Table(file_data)
         file_table.setStyle(TableStyle([
